@@ -28,6 +28,7 @@ runs:
   - uses: actions/checkout@v3
     with:
       repository: ${{ inputs.repo }}
+      path: ${{ inputs.repo-path }}
       token: ${{ inputs.token }}
 
   - name: Update Version
