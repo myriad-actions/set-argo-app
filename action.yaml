@@ -2,22 +2,24 @@ name: "Update the helm chart release version"
 description: "the argocd application source helm chart version will update in these steps"
 
 inputs:
-  repo: 
-    description: "Gitops repo where ArgoCD app are stored"
-    required: true
   app: 
     description: "The app Name / workdir"
-    required: true
-  version:
-    description: "The new version published to the s3"
     required: true
   environment: 
     description: "The current branch to target the environment"
     required: true
+  repo: 
+    description: "Gitops repo where ArgoCD app are stored"
+    required: true
+  repo-path: 
+    description: "Gitops repo path"
+    required: true
   token: 
     description: "The github token "
     required: true
-
+  version:
+    description: "The new version published to the s3"
+    required: true
 
 runs:
    # allow you to bundle multiple workflow steps into a single action, combining multiple run commands into a single reusable action.
@@ -30,10 +32,13 @@ runs:
 
   - name: Update Version
     shell: bash
-    working-directory: ${{ inputs.environment }}/${{ inputs.app }}
     env: 
+      APP: ${{ inputs.app }}
+      ENVIRONMENT: ${{ inputs.environment }}
+      REPOPATH: ${{ inputs.repo-path }}
       VERSION: ${{ inputs.version }}
     run: |
+      cd ${GITHUB_WORKSPACE}/${REPOPATH}/${ENVIRONMENT}/${APP}
       wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O ./yq
       chmod +x ./yq
       ./yq e '.version="'$VERSION'"' -i manifest.yaml
