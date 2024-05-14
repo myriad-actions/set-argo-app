@@ -34,34 +34,23 @@ runs:
   - name: Update Version
     shell: bash
     env: 
-      APP: ${{ inputs.app }}
-      ENVIRONMENT: ${{ inputs.environment }}
-      REPOPATH: ${{ inputs.repo-path }}
       VERSION: ${{ inputs.version }}
+    working-directory: ${{ inputs.repo-path }}/${{ inputs.environment }}/${{ inputs.app }}
     run: |
-      cd ${GITHUB_WORKSPACE}/${REPOPATH}/${ENVIRONMENT}/${APP}
       wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O ./yq
       chmod +x ./yq
       ./yq e '.version="'$VERSION'"' -i manifest.yaml
       rm yq
+  
   - name: Update ArgoCD Application
     shell: bash
     env:
       CI_COMMIT_MESSAGE: ArgoCD Application Version Updated 
       CI_COMMIT_AUTHOR: Continuous Deployment
+    working-directory: ${{ inputs.repo-path }}/${{ inputs.environment }}/${{ inputs.app }}
     run: |
       git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
       git config --global user.email "username@users.noreply.github.com"
       git add .
       git commit -m "${{ env.CI_COMMIT_MESSAGE }} ${{env.VERSION}}"
       git push
-
-  # - name: Update ArgoCD Application
-  #   uses: devops-infra/action-commit-push@master
-  #   with:
-  #    github_token: ${{ inputs.token }}
-  #    target_branch: main
-  #    force: true
-  #    add_timestamp: true
-  #    commit_prefix: ${{ inputs.environment }}/${{ inputs.app }}
-  #    commit_message: "update version"
